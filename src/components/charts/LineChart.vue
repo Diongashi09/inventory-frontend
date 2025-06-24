@@ -1,0 +1,122 @@
+<template>
+    <div class="bg-white shadow-md rounded-lg p-6">
+      <h3 class="text-lg font-semibold mb-4 text-gray-700">{{ title }}</h3>
+      <!-- Render canvas only if there's data, otherwise show a message -->
+      <canvas :id="chartId" ref="chartCanvas" v-if="data && data.length > 0"></canvas>
+      <p v-else class="text-center text-gray-500 py-4">No data available for this chart.</p>
+    </div>
+  </template>
+  
+  <script setup>
+  import { onMounted, watch, ref, onUnmounted } from 'vue';
+  import Chart from 'chart.js/auto'; // Import Chart.js
+  
+  const props = defineProps({
+    title: {
+      type: String,
+      required: true,
+    },
+    labels: {
+      type: Array,
+      required: true,
+    },
+    data: {
+      type: Array,
+      required: true,
+    },
+    borderColor: {
+      type: String,
+      default: '#4A90E2', // Default line color
+    },
+    backgroundColor: {
+      type: String,
+      default: 'rgba(74, 144, 226, 0.2)', // Default fill color
+    },
+  });
+  
+  const chartInstance = ref(null);
+  const chartCanvas = ref(null); // Ref for the canvas element itself
+  const chartId = ref(`line-chart-${Math.random().toString(36).substring(7)}`); // Unique ID for canvas
+  
+  const renderChart = () => {
+    // Get the canvas context
+    const ctx = chartCanvas.value;
+  
+    // If there's no canvas element or no data, ensure chart is destroyed and exit
+    if (!ctx || !props.data || props.data.length === 0 || !props.labels || props.labels.length === 0) {
+      if (chartInstance.value) {
+        chartInstance.value.destroy();
+        chartInstance.value = null; // Explicitly nullify the instance
+      }
+      return;
+    }
+  
+    // If a chart instance already exists, update its data
+    if (chartInstance.value) {
+      chartInstance.value.data.labels = props.labels;
+      chartInstance.value.data.datasets[0].data = props.data;
+      chartInstance.value.data.datasets[0].borderColor = props.borderColor;
+      chartInstance.value.data.datasets[0].backgroundColor = props.backgroundColor;
+      chartInstance.value.update(); // Update the existing chart
+    } else {
+      // Otherwise, create a new chart instance
+      chartInstance.value = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: props.labels,
+          datasets: [{
+            label: props.title,
+            data: props.data,
+            borderColor: props.borderColor,
+            backgroundColor: props.backgroundColor,
+            fill: true, // Fill area under the line
+            tension: 0.3, // Smoothness of the line
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+          plugins: {
+            legend: {
+              display: false,
+            }
+          }
+        },
+      });
+    }
+  };
+  
+  onMounted(() => {
+    // Initial render attempt. Watchers will handle subsequent updates.
+    // Ensure Chart.js is loaded if using CDN (though typically 'chart.js/auto' implies npm install)
+    renderChart();
+  });
+  
+  // Watch for changes in the canvas ref (when v-if makes it available) or data/labels
+  // Use 'sync' or 'post' flush depending on specific rendering needs. 'post' is generally safer.
+  watch([chartCanvas, () => props.data, () => props.labels], () => {
+    renderChart();
+  }, { deep: true, flush: 'post' });
+  
+  // Clean up chart instance when component is unmounted to prevent memory leaks
+  onUnmounted(() => {
+    if (chartInstance.value) {
+      chartInstance.value.destroy();
+      chartInstance.value = null;
+    }
+  });
+  </script>
+  
+  <style scoped>
+  canvas {
+    max-height: 300px; /* Limit chart height */
+    width: 100% !important; /* Ensure it takes full width */
+    height: auto !important; /* Adjust height automatically */
+  }
+  </style>
+  
