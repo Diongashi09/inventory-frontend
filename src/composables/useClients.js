@@ -3,16 +3,25 @@ import { useAxios } from '@/composables/useAxios';
 
 const clients = ref([]);
 const client = ref(null);
+const clientProfile = ref(null);
 const isLoading = ref(false);
+const isUpdating = ref(false);
 const errorMessage = ref(null);
+const updateSuccessMessage = ref(null);
+const updateErrorMessage = ref(null);
+
+
 
 export function useClients() {
   const { api } = useAxios(); // Initialize useAxios inside the composable function
 
   const clearErrorMessage = () => {
     errorMessage.value = null;
+    updateErrorMessage.value = null;
+    updateSuccessMessage.value = null;
   };
 
+  //Admin/Manager Client Management
   const fetchClients = async () => {
     isLoading.value = true;
     clearErrorMessage();
@@ -86,17 +95,60 @@ export function useClients() {
     }
   };
 
+//Client Specific Profile Management
+
+const fetchMyProfile = async () => {
+    isLoading.value = true;
+    clearErrorMessage();
+    try {
+      // Calls the new backend endpoint for the authenticated client's profile
+      const response = await api.get('/client/profile');
+      clientProfile.value = response.data;
+      console.log('Fetched client profile:', clientProfile.value);
+    } catch (error) {
+      console.error("Error fetching client profile:", error);
+      errorMessage.value = error.response?.data?.message || 'Failed to load your profile.';
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const updateMyProfile = async (profileData) => {
+    isUpdating.value = true; // Use separate loading state for update
+    updateErrorMessage.value = null; // Clear previous update errors
+    updateSuccessMessage.value = null; // Clear previous success messages
+    try {
+      // Calls the new backend endpoint for updating the authenticated client's profile
+      const response = await api.patch('/client/profile', profileData);
+      clientProfile.value = response.data.client; // Backend returns 'client' nested in response
+      updateSuccessMessage.value = response.data.message || 'Profile updated successfully!';
+      console.log('Client profile updated:', response.data);
+    } catch (error) {
+      console.error("Error updating client profile:", error);
+      updateErrorMessage.value = error.response?.data?.message || 'Failed to update your profile.';
+    } finally {
+      isUpdating.value = false;
+    }
+  };
+
+
   return {
     clients,
     client,
+    clientProfile,
     isLoading,
+    isUpdating,
     errorMessage,
+    updateSuccessMessage,
+    updateErrorMessage,
     clearErrorMessage,
     fetchClients,
     getClientById,
     createClient,
     updateClient,
     deleteClient,
+    fetchMyProfile,
+    updateMyProfile
   };
 }
 

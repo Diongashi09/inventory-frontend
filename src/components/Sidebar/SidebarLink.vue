@@ -25,6 +25,102 @@ import { useAuth } from '@/composables/useAuth';
 
 const props = defineProps({
   to: {
+    type: [String, Object],
+    required: true,
+  },
+  icon: {
+    type: String,
+    required: true,
+  },
+  text: {
+    type: String,
+    required: true,
+  },
+  requiredRoles: {
+    type: Array,
+    default: () => [],        // If empty, visible to all authenticated users
+  },
+  exact: {
+    type: Boolean,
+    default: false,
+  }
+});
+
+// Grab your role-checking helper
+const { hasAnyRole } = useAuth();
+
+const hasRequiredRole = computed(() => {
+  // no roles required → show link
+  if (!props.requiredRoles.length) {
+    return true;
+  }
+  // otherwise only show if user has one of the requiredRoles
+  return hasAnyRole(props.requiredRoles);
+});
+</script>
+
+<style scoped>
+.sidebar-link-base {
+  @apply relative flex items-center gap-3 px-8 py-3 transition-colors hover:bg-gray-100 text-gray-800 rounded-md;
+  padding-left: 2rem;
+  position: relative;
+}
+
+/* The 5px indicator space - always rendered, just transparent unless active */
+.left-indicator {
+  width: 5px;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+/* When the <router-link> is active, Tailwind’s classes get added */
+.active-link {
+  @apply bg-gray-100;
+}
+.active-link .left-indicator {
+  background-color: #bfdbfe; /* Tailwind’s blue-200 */
+}
+
+.icon {
+  @apply w-6 text-center text-gray-800;
+}
+
+.label {
+  @apply font-medium text-gray-800;
+}
+</style>
+
+
+<!-- <template>
+  <router-link
+    v-if="hasRequiredRole"
+    :to="to"
+    class="w-full"
+    :exact="exact"
+    active-class="active-link"
+    exact-active-class="active-link"
+  >
+    <div class="sidebar-link-base">
+      <div class="left-indicator" />
+      
+      <i :class="icon" class="icon" />
+      <span class="label">
+        {{ text }}
+      </span>
+    </div>
+  </router-link>
+</template>
+
+<script setup>
+import { computed } from 'vue';
+import { useAuth } from '@/composables/useAuth';
+
+const props = defineProps({
+  to: {
     type: Object,
     required: true,
   },
@@ -61,11 +157,9 @@ const hasRequiredRole = computed(() => {
   @apply relative flex items-center gap-3 px-8 py-3 transition-colors hover:bg-gray-100 text-gray-800 rounded-md;
   padding-left: 2rem;
   position: relative;
-  border-radius: 6px; /* Optional: use a specific value if you want finer control */
+  border-radius: 6px; 
 }
 
-
-/* The 5px indicator space - always rendered, just transparent unless active */
 .left-indicator {
   width: 5px;
   height: 100%;
@@ -76,13 +170,12 @@ const hasRequiredRole = computed(() => {
   transition: background-color 0.2s;
 }
 
-/* When active, color the indicator and apply background */
 .active-link {
   @apply bg-gray-100;
 }
 
 .active-link .left-indicator {
-  background-color: #bfdbfe; /* Tailwind's blue-200 */
+  background-color: #bfdbfe; 
 }
 
 .icon {
@@ -92,9 +185,13 @@ const hasRequiredRole = computed(() => {
 .label {
   @apply font-medium text-gray-800;
 }
-</style>
+</style> -->
 
 
+
+
+
+//////////////
 
 <!-- <template>
   <router-link

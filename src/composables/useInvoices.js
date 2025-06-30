@@ -19,7 +19,7 @@ export function useInvoices() {
     clearErrorMessage();
     try {
       const response = await api.get('/invoices');
-      invoices.value = response.data;
+      invoices.value = response.data.data;
     } catch (error) {
       console.error("Error fetching invoices:", error);
       errorMessage.value = error.response?.data?.message || 'Failed to load invoices.';
@@ -33,7 +33,7 @@ export function useInvoices() {
     clearErrorMessage();
     try {
       const response = await api.get(`/invoices/${id}`);
-      invoice.value = response.data.data;
+      invoice.value = response.data;
       return invoice.value;
     } catch (error) {
       console.error(`Error fetching invoice with ID ${id}:`, error);

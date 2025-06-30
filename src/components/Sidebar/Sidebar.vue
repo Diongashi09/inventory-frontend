@@ -5,16 +5,47 @@
       <span>Inventory</span>
     </div>
 
+
     <nav class="flex-grow px-2 mt-4 space-y-1 overflow-y-auto">
-      <SidebarLink icon="fas fa-tachometer-alt" text="Dashboard" :to="{ name: 'Dashboard' }" :requiredRoles="['Admin', 'Manager', 'Staff']" exact/>
-      <SidebarLink icon="fas fa-box" text="Products" :to="{ name: 'Products' }" :requiredRoles="['Admin', 'Manager', 'Staff']" />
-      <SidebarLink icon="fas fa-users" text="Clients" :to="{ name: 'Clients' }" :requiredRoles="['Admin', 'Manager', 'Staff']" />
-      <SidebarLink icon="fas fa-file-invoice" text="Invoices" :to="{ name: 'Invoices' }" :requiredRoles="['Admin', 'Manager', 'Staff']" />
-      <SidebarLink icon="fas fa-warehouse" text="Supplies" :to="{ name: 'Supplies' }" :requiredRoles="['Admin', 'Manager', 'Staff']" />
-      <SidebarLink icon="fas fa-truck" text="Shippings" :to="{ name: 'Shippings' }" :requiredRoles="['Admin', 'Manager', 'Staff']" />
+      <!-- Links visible to Admin, Manager, Client -->
+      <SidebarLink icon="fas fa-tachometer-alt" text="Dashboard" :to="{ name: 'Dashboard' }" :requiredRoles="['Admin', 'Manager', 'Client']" exact />
+      <SidebarLink icon="fas fa-box" text="Products" :to="{ name: 'Products' }" :requiredRoles="['Admin', 'Manager', 'Client']" />
+
+      <!-- Client-Specific Links -->
+      <SidebarLink
+        v-if="hasAnyRole(['Client'])"
+        icon="fas fa-shopping-bag"
+        text="My Orders"
+        :to="{ name: 'MyOrders' }"
+        :requiredRoles="['Client']"
+      />
+      <SidebarLink
+        v-if="hasAnyRole(['Client'])"
+        icon="fas fa-user-circle"
+        text="My Profile"
+        :to="{ name: 'MyProfile' }"
+        :requiredRoles="['Client']"
+      />
+
+      <!-- Admin/Manager Specific Links -->
+      <SidebarLink v-if="hasAnyRole(['Admin', 'Manager'])" icon="fas fa-users" text="Clients" :to="{ name: 'Clients' }" :requiredRoles="['Admin', 'Manager']" />
+      <SidebarLink v-if="hasAnyRole(['Admin', 'Manager'])" icon="fas fa-file-invoice" text="Invoices" :to="{ name: 'Invoices' }" :requiredRoles="['Admin', 'Manager']" />
+      <SidebarLink v-if="hasAnyRole(['Admin', 'Manager'])" icon="fas fa-warehouse" text="Supplies" :to="{ name: 'Supplies' }" :requiredRoles="['Admin', 'Manager']" />
+      <SidebarLink v-if="hasAnyRole(['Admin', 'Manager'])" icon="fas fa-truck" text="Shippings" :to="{ name: 'Shippings' }" :requiredRoles="['Admin', 'Manager']" />
+      <SidebarLink v-if="hasAnyRole(['Admin', 'Manager'])" icon="fas fa-exchange-alt" text="Transactions" :to="{ name: 'Transactions' }" :requiredRoles="['Admin', 'Manager']" />
+      <SidebarLink v-if="hasAnyRole(['Admin'])" icon="fas fa-user-tie" text="Employees" :to="{ name: 'Employees' }" :requiredRoles="['Admin']" />
+    </nav>
+
+    <!-- <nav class="flex-grow px-2 mt-4 space-y-1 overflow-y-auto">
+      <SidebarLink icon="fas fa-tachometer-alt" text="Dashboard" :to="{ name: 'Dashboard' }" :requiredRoles="['Admin', 'Manager', 'Client']" exact/>
+      <SidebarLink icon="fas fa-box" text="Products" :to="{ name: 'Products' }" :requiredRoles="['Admin', 'Manager', 'Client']" />
+      <SidebarLink icon="fas fa-users" text="Clients" :to="{ name: 'Clients' }" :requiredRoles="['Admin', 'Manager', 'Client']" />
+      <SidebarLink icon="fas fa-file-invoice" text="Invoices" :to="{ name: 'Invoices' }" :requiredRoles="['Admin', 'Manager', 'Client']" />
+      <SidebarLink icon="fas fa-warehouse" text="Supplies" :to="{ name: 'Supplies' }" :requiredRoles="['Admin', 'Manager', 'Client']" />
+      <SidebarLink icon="fas fa-truck" text="Shippings" :to="{ name: 'Shippings' }" :requiredRoles="['Admin', 'Manager', 'Client']" />
       <SidebarLink icon="fas fa-exchange-alt" text="Transactions" :to="{ name: 'Transactions' }" :requiredRoles="['Admin', 'Manager']" />
       <SidebarLink icon="fas fa-user-tie" text="Employees" :to="{ name: 'Employees' }" :requiredRoles="['Admin']" />
-    </nav>
+    </nav> -->
 
     <!-- <div class="border-t p-4">
       <button
@@ -100,7 +131,7 @@ import { useAuth } from '@/composables/useAuth';
 import dashboardLogo from '@/assets/checklist.png'; // Adjust path if needed
 
 const router = useRouter();
-const { logout } = useAuth();
+const { logout, hasAnyRole } = useAuth();
 
 const showLogoutModal = ref(false);
 
