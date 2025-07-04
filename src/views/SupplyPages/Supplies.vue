@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center">
       <h1 class="text-2xl font-semibold">Supplies</h1>
       <button
-        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
         @click="goToCreateSupply"
       >
         New Supply

@@ -1,15 +1,32 @@
-<!-- src/views/ProductPages/Products.vue -->
 <template>
   <div class="p-6 space-y-4">
     <div class="flex justify-between items-center">
       <h1 class="text-2xl font-semibold">Products Management</h1>
       <button
         v-if="hasAnyRole(['Admin', 'Manager'])"
-        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
         @click="goToCreateProduct"
       >
         New Product
       </button>
+    </div>
+
+    <!-- Filter & Sort Controls -->
+    <div class="flex items-center gap-4 mb-4">
+      <!-- Category Filter -->
+      <select v-model="selectedCategory" class="border px-3 py-2 rounded-md text-sm">
+        <option value="">All Categories</option>
+        <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+          {{ cat.name }}
+        </option>
+      </select>
+
+      <!-- Sort By -->
+      <select v-model="sortBy" class="border px-3 py-2 rounded-md text-sm">
+        <option value="">Sort by</option>
+        <option value="price_asc">Price: Low to High</option>
+        <option value="price_desc">Price: High to Low</option>
+      </select>
     </div>
 
     <div v-if="isLoading" class="text-center text-gray-600 py-8">
@@ -23,41 +40,50 @@
       @edit="goToEditProduct"
       @delete="requestDelete"
     />
+
     <ProductForm 
-     v-if="showForm"
-     :product="editingProduct"
-     @save="onSave"
-     @cancel="closeForm"
+      v-if="showForm"
+      :product="editingProduct"
+      @save="onSave"
+      @cancel="closeForm"
     />
 
     <!-- Delete Confirmation Modal -->
-<div v-if="showDeleteModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-  <div class="bg-white rounded-lg p-6 w-full max-w-sm shadow-lg">
-    <h2 class="text-lg font-semibold mb-4">Delete Product</h2>
-    <p>Are you sure you want to delete <span class="font-bold">{{ productToDelete?.name }}</span>? This action cannot be undone.</p>
-    <div class="flex justify-end space-x-2 mt-6">
-      <button @click="cancelDelete" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
-      <button @click="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+    <div
+      v-if="showDeleteModal"
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50"
+    >
+      <div class="bg-white rounded-lg p-6 w-full max-w-sm shadow-lg">
+        <h2 class="text-lg font-semibold mb-4">Delete Product</h2>
+        <p>
+          Are you sure you want to delete
+          <span class="font-bold">{{ productToDelete?.name }}</span>? This action cannot be undone.
+        </p>
+        <div class="flex justify-end space-x-2 mt-6">
+          <button @click="cancelDelete" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
+          <button @click="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+            Delete
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Notification -->
-<div
-  v-if="notification.show"
-  :class="[
-    'fixed bottom-6 right-6 px-6 py-3 rounded shadow-lg z-50',
-    notification.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-  ]"
->
-  {{ notification.message }}
-</div>
-
+    <!-- Notification -->
+    <div
+      v-if="notification.show"
+      :class="[
+        'fixed bottom-6 right-6 px-6 py-3 rounded shadow-lg z-50',
+        notification.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+      ]"
+    >
+      {{ notification.message }}
+    </div>
   </div>
 </template>
 
+
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 // import {
 //   products,
@@ -73,7 +99,15 @@ import ProductForm from '@/components/Products/ProductForm.vue';
 
 const router = useRouter();
 const { hasAnyRole } = useAuth();
-const { products, fetchProducts, deleteProduct, updateProduct, createProduct } = useProducts();
+const { 
+  products, 
+  categories,
+  fetchProducts, 
+  fetchCategories,
+  deleteProduct, 
+  updateProduct, 
+  createProduct 
+} = useProducts();
 
 const isLoading = ref(true);
 const showForm = ref(false);
@@ -81,6 +115,9 @@ const editingProduct = ref({});
 
 const showDeleteModal = ref(false);
 const productToDelete = ref(null);
+
+const selectedCategory = ref('');
+const sortBy = ref('');
 
 const notification = ref({
   show: false,
@@ -124,7 +161,10 @@ function showNotification(message, type = 'success') {
 async function loadAllProducts() {
   isLoading.value = true;
   try {
-    await fetchProducts();
+    await fetchProducts({
+      category_id: selectedCategory.value || undefined,
+      sort_by: sortBy.value || undefined,
+    });
   } catch (error) {
     console.error("Error loading products:", error);
     alert("Failed to load products: " + (error.response?.data?.message || error.message));
@@ -133,7 +173,12 @@ async function loadAllProducts() {
   }
 }
 
-onMounted(loadAllProducts);
+onMounted(async () => {
+  await fetchCategories();
+  await loadAllProducts();
+});
+
+watch([selectedCategory,sortBy],loadAllProducts);
 
 function goToCreateProduct() {
   editingProduct.value = {};

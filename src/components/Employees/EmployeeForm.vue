@@ -39,7 +39,7 @@
           <!-- Assuming these are your backend role IDs. Verify them! -->
           <option :value="1">Admin</option>
           <option :value="2">Manager</option>
-          <option :value="3">Staff</option>
+          <!-- <option :value="3">Staff</option> -->
         </select>
       </div>
       <!-- Removed phone, address, hireDate, notes as they are not handled by UserController -->

@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-2xl font-semibold">Clients</h1>
       <button
-        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
         @click="goToCreateClient"
       >
         New Client

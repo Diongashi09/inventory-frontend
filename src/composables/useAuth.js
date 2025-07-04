@@ -45,17 +45,11 @@ export function useAuth() {
 
   // --- Authentication Functions (Laravel API calls) ---
 
-  const register = async (name, email, password, password_confirmation, role_id) => {
+  const register = async (payload) => {
     isLoading.value = true;
     clearErrorMessage();
     try {
-      const response = await api.post('/register', {
-        name,
-        email,
-        password,
-        password_confirmation,
-        role_id
-      });
+      const response = await api.post('/register', payload);
       // Backend returns 'access_token' and 'user' directly at the root
       setAuthState(response.data.user, response.data.access_token);
       console.log('Register successful:', response.data.user.email);
@@ -86,9 +80,14 @@ export function useAuth() {
   const logout = async () => {
     isLoading.value = true;
     clearErrorMessage();
+
+    const token = localStorage.getItem('authToken');
+
     try {
-      await api.post('/logout');
-      console.log('Backend logout success.');
+      if(token){
+        await api.post('/logout');
+        console.log('Backend logout success.');
+      }
     } catch (error) {
       console.error("Logout error (client-side state still cleared):", error);
       errorMessage.value = error.response?.data?.message || 'Logout failed.';

@@ -18,6 +18,7 @@ import Dashboard from '@/views/Dashboard.vue'; // Directly in src/views/
 import Products from '@/views/ProductPages/Products.vue';
 import ProductDetails from '@/views/ProductPages/ProductDetails.vue';
 import ProductForm from '@/components/Products/ProductForm.vue'; // Used for create/edit
+import ClientProductList from '@/views/ProductPages/ClientProductList.vue';
 import MyProfile from '@/views/ClientPages/MyProfile.vue'; 
 
 // Clients (from src/views/ClientPages/ and src/components/Clients/)
@@ -30,6 +31,10 @@ import Invoices from '@/views/InvoicePages/Invoices.vue';
 import InvoiceDetails from '@/views/InvoicePages/InvoiceDetails.vue';
 import InvoiceForm from '@/components/Invoices/InvoiceForm.vue';
 import MyOrders from '@/views/ClientPages/MyOrders.vue';
+
+// Cart & Checkout 
+import CartView from '@/views/CartPages/CartView.vue';
+import CheckoutView from '@/views/CartPages/CheckoutView.vue';
 
 // Supplies (from src/views/SupplyPages/ and src/components/Supplies/)
 import Supplies from '@/views/SupplyPages/Supplies.vue';
@@ -50,6 +55,10 @@ import TransactionDetails from '@/views/TransactionPages/TransactionDetails.vue'
 import Employees from '@/views/EmployeesPages/Employees.vue';
 import EmployeeDetails from '@/views/EmployeesPages/EmployeeDetails.vue';
 import EmployeeForm from '@/components/Employees/EmployeeForm.vue';
+
+// Announcements (New Imports)
+import Announcements from '@/views/AnnouncementPages/Announcements.vue'; // Assuming you have a list view
+import AnnouncementForm from '@/views/AnnouncementPages/AnnouncementForm.vue';
 
 const routes = [
   { 
@@ -84,10 +93,28 @@ const routes = [
       { path: '', name: 'Dashboard', component: Dashboard, meta: { requiredRoles: ['Admin', 'Manager', 'Client'] } },
 
       // Products & Categories
-      { path: 'products', name: 'Products', component: Products, meta: { requiredRoles: ['Admin', 'Manager', 'Client'] } },
+      { 
+        path: 'products', 
+        name: 'Products', 
+        component: Products, 
+        meta: { requiredRoles: ['Admin', 'Manager', 'Client']},
+        beforeEnter: (to,from,next) => {
+          const { userRole } = useAuth();
+          if(userRole.value === 'Client'){
+            next({name: 'ClientProductList'});
+          } else {
+            next();
+          }
+        }
+      },
       { path: 'products/new', name: 'CreateProduct', component: ProductForm, meta: { requiredRoles: ['Admin', 'Manager'] } },
       { path: 'products/:id', name: 'ProductDetails', component: ProductDetails, props: true, meta: { requiredRoles: ['Admin', 'Manager', 'Client'] } },
       { path: 'products/:id/edit', name: 'EditProduct', component: ProductForm, props: true, meta: { requiredRoles: ['Admin', 'Manager'] } },
+
+      //ProductList
+      { path: 'shop', name: 'ClientProductList', component: ClientProductList, meta: { requiredRoles: ['Client'] }},
+      { path: 'cart', name: 'CartView', component: CartView, meta: { requiredRoles:  ['Client']} },
+      { path: 'checkout', name: 'CheckoutView', component: CheckoutView, meta: { requiredRoles: ['Client'] } },
 
       // My Orders (Client Specific) - Accessible only to Client role
       { path: 'my-orders', name: 'MyOrders', component: MyOrders, meta: { requiredRoles: ['Client'] } },
@@ -117,7 +144,7 @@ const routes = [
 
       // Shippings
       { path: 'shippings', name: 'Shippings', component: Shippings, meta: { requiredRoles: ['Admin', 'Manager', ] } },
-      { path: 'shippings/:invoiceId/details', name: 'ShippingDetails', component: ShippingDetails, props: true, meta: { requiredRoles: ['Admin', 'Manager', ] } },
+      { path: 'shippings/:id/details', name: 'ShippingDetails', component: ShippingDetails, props: true, meta: { requiredRoles: ['Admin', 'Manager', ] } },
 
       // Transactions
       { path: 'transactions', name: 'Transactions', component: Transactions, meta: { requiredRoles: ['Admin', 'Manager'] } },
@@ -134,6 +161,9 @@ const routes = [
         meta: { requiredRoles: ['Admin', 'Manager', ] }
       },
       { path: 'employees/:id/edit', name: 'EditEmployee', component: EmployeeForm, props: true, meta: { requiredRoles: ['Admin', 'Manager', 'Staff'] } },
+      // Announcements (NEW ROUTES)
+      { path: 'announcements', name: 'Announcements', component: Announcements, meta: { requiredRoles: ['Admin', 'Manager', 'Client'] } },
+      { path: 'announcements/new', name: 'CreateAnnouncement', component: AnnouncementForm, meta: { requiredRoles: ['Admin', 'Manager'] } },
     ]
   },
   {

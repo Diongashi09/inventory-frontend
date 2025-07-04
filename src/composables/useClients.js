@@ -10,8 +10,6 @@ const errorMessage = ref(null);
 const updateSuccessMessage = ref(null);
 const updateErrorMessage = ref(null);
 
-
-
 export function useClients() {
   const { api } = useAxios(); // Initialize useAxios inside the composable function
 
@@ -103,7 +101,8 @@ const fetchMyProfile = async () => {
     try {
       // Calls the new backend endpoint for the authenticated client's profile
       const response = await api.get('/client/profile');
-      clientProfile.value = response.data;
+      // clientProfile.value = response.data.client;
+      clientProfile.value = response.data.client;
       console.log('Fetched client profile:', clientProfile.value);
     } catch (error) {
       console.error("Error fetching client profile:", error);

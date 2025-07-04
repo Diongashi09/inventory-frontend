@@ -17,11 +17,11 @@ export function useProducts() {
   };
 
   // Fetch all products
-  const fetchProducts = async () => {
+  const fetchProducts = async (params = {}) => {
     isLoading.value = true;
     clearErrorMessage();
     try {
-      const response = await api.get('/products');
+      const response = await api.get('/products', { params: params });
       products.value = response.data;
     } catch (error) {
       console.error("Error fetching products:", error);

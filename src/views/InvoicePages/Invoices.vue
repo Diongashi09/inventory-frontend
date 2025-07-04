@@ -3,13 +3,42 @@
   <div class="p-6 space-y-4">
     <div class="flex justify-between items-center">
       <h1 class="text-2xl font-semibold">Invoices</h1>
-      <!-- <button
+      <button
         v-if="hasAnyRole(['Admin', 'Manager', 'Staff'])"
-        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         @click="goToCreateInvoice"
       >
-        New Invoice
-      </button> -->
+        Create New Invoice
+      </button>
+    </div>
+
+    <div v-if="isLoading" class="text-center text-gray-600 py-8">
+      <p>Loading invoices...</p>
+      <p class="text-sm">Please wait while we fetch the data.</p>
+    </div>
+
+    <InvoiceTable
+      v-else
+      :invoices="invoices || []"
+      @edit="goToEditInvoice"
+      @delete="onDelete"
+      @start-shipping="onStartShipping"
+    />
+
+    <ShippingStatusForm
+      v-if="showShippingForm"
+      :invoice="shippingInvoice"
+      @save="onSaveShipping"
+      @cancel="() => (showShippingForm = false)"
+    />
+  </div>
+</template>
+
+
+<!-- <template>
+  <div class="p-6 space-y-4">
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-semibold">Invoices</h1>
     </div>
 
     <div v-if="isLoading" class="text-center text-gray-600 py-8">
@@ -19,13 +48,12 @@
 
     <InvoiceTable
       v-else
-      :invoices="invoices.data || []"
+      :invoices="invoices || []"
       @edit="goToEditInvoice"
       @delete="onDelete"
       @start-shipping="onStartShipping"
     />
 
-    <!-- Start Shipping Form (Modal) -->
     <ShippingStatusForm
       v-if="showShippingForm"
       :invoice="shippingInvoice"
@@ -33,7 +61,7 @@
       @cancel="() => (showShippingForm = false)"
     />
   </div>
-</template>
+</template> -->
 
 <script setup>
 import { ref, onMounted } from 'vue';

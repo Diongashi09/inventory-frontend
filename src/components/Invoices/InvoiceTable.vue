@@ -1,4 +1,111 @@
+<!-- src/components/Invoices/InvoiceTable.vue -->
 <template>
+  <div class="bg-white shadow-md rounded-lg p-4">
+    <div v-if="isLoading" class="text-center py-8">
+      <p>Loading invoices...</p>
+    </div>
+
+    <div v-else-if="errorMessage" class="text-red-600 text-center py-8">
+      <p>{{ errorMessage }}</p>
+    </div>
+
+    <div v-else-if="invoices.length === 0" class="text-center py-8">
+      <p>No invoices found. Start by creating a new one!</p>
+    </div>
+
+    <div v-else class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice #</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Items</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Price</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr v-for="invoice in invoices" :key="invoice.id">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              {{ invoice.reference_number }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ invoice.client?.name || 'Unknown Client' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ formatDate(invoice.date) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span :class="getStatusClass(invoice.status)">
+                {{ formatStatus(invoice.status) }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ invoice.items ? invoice.items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0 }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              ${{ calculateTotalPrice(invoice.items).toFixed(2) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <router-link
+                :to="{ name: 'InvoiceDetails', params: { id: invoice.id } }"
+                class="text-indigo-600 hover:text-indigo-900 mr-4"
+              >
+                View
+              </router-link>
+              <router-link
+                :to="{ name: 'EditInvoice', params: { id: invoice.id } }"
+                class="text-green-600 hover:text-green-900 mr-4"
+              >
+                Edit
+              </router-link>
+              <button
+                @click="confirmDelete(invoice.id)"
+                class="text-red-600 hover:text-red-900"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div
+      v-if="showDeleteModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center"
+    >
+      <div class="relative p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Confirm Deletion</h3>
+          <div class="mt-2 px-7 py-3">
+            <p class="text-sm text-gray-500">Are you sure you want to delete this invoice? This action cannot be undone.</p>
+          </div>
+          <div class="items-center px-4 py-3">
+            <button
+              @click="deleteInvoice(invoiceToDeleteId); showDeleteModal = false;"
+              class="px-4 py-2 bg-red-600 text-white rounded-md w-full hover:bg-red-700"
+            >
+              Delete
+            </button>
+            <button
+              @click="showDeleteModal = false"
+              class="mt-3 px-4 py-2 bg-white text-gray-700 border rounded-md w-full hover:bg-gray-100"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+
+<!-- <template>
   <div class="bg-white shadow-md rounded-lg p-4">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-2xl font-semibold">Invoices</h2>
@@ -96,7 +203,6 @@
       </table>
     </div>
 
-    <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
       <div class="relative p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3 text-center">
@@ -124,7 +230,7 @@
       </div>
     </div>
   </div>
-</template>
+</template> -->
 
 <script setup>
 import { ref } from 'vue';

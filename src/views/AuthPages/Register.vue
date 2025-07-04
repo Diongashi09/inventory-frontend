@@ -1,4 +1,153 @@
 <template>
+  <div 
+    class="min-h-screen flex items-center justify-center bg-gray-50 p-4"
+    :style="bgStyle"
+  >
+    <div class="max-w-md w-full bg-white p-8 rounded-xl shadow">
+      <h2 class="text-xl font-bold mb-4">Create your account</h2>
+
+      <form @submit.prevent="handleRegister" class="space-y-4">
+        <!-- Name / Company Name -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">I am a:</label>
+          <select v-model="form.client_type" required
+                  class="mt-1 block w-full border rounded px-3 py-2">
+            <option value="individual">Individual</option>
+            <option value="company">Company</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">
+            {{ form.client_type==='company' ? 'Company Name' : 'Your Name' }}
+          </label>
+          <input v-model="form.name" type="text" required
+                 class="mt-1 block w-full border rounded px-3 py-2"
+                 :placeholder="form.client_type==='company' ? 'Acme Corp.' : 'John Doe'" />
+        </div>
+
+        <!-- If company, also ask for contact person -->
+        <div v-if="form.client_type==='company'">
+          <label class="block text-sm font-medium text-gray-700">Contact Person</label>
+          <input v-model="form.contact_person" type="text" required
+                 class="mt-1 block w-full border rounded px-3 py-2"
+                 placeholder="Jane Smith" />
+        </div>
+
+        <!-- email & password -->
+        <div>
+          <label class="sr-only">Email</label>
+          <input v-model="form.email" type="email" required
+                 class="mt-1 block w-full border rounded px-3 py-2"
+                 placeholder="you@example.com" />
+        </div>
+        <div>
+          <input v-model="form.password" type="password" required
+                 class="mt-1 block w-full border rounded px-3 py-2"
+                 placeholder="Password" />
+        </div>
+        <div>
+          <input v-model="form.password_confirmation" type="password" required
+                 class="mt-1 block w-full border rounded px-3 py-2"
+                 placeholder="Confirm Password" />
+        </div>
+
+        <!-- optional client fields -->
+        <div>
+          <input v-model="form.phone" type="tel"
+                 class="mt-1 block w-full border rounded px-3 py-2"
+                 placeholder="Phone (optional)" />
+        </div>
+        <div>
+          <textarea v-model="form.address"
+                    class="mt-1 block w-full border rounded px-3 py-2"
+                    rows="2"
+                    placeholder="Address (optional)"></textarea>
+        </div>
+        <div>
+          <textarea v-model="form.additional_info"
+                    class="mt-1 block w-full border rounded px-3 py-2"
+                    rows="2"
+                    placeholder="Additional info (optional)"></textarea>
+        </div>
+
+        <button type="submit"
+                class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+                :disabled="isLoading">
+          <span v-if="isLoading">Registering…</span>
+          <span v-else>Register</span>
+        </button>
+
+        <p v-if="errorMessage" class="text-red-600 text-sm mt-2 text-center">
+          {{ errorMessage }}
+        </p>
+      </form>
+
+      <p class="mt-4 text-center text-sm text-gray-600">
+        Already have an account?
+        <router-link to="/login" class="text-blue-600 hover:underline">
+          Log in
+        </router-link>
+      </p>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { useAuth } from '@/composables/useAuth';
+import { useRouter } from 'vue-router';
+
+import bgImg from '@/assets/supply-chain-representation-with-van-top-view.jpg'
+
+
+const router = useRouter();
+const { register, isLoading, errorMessage } = useAuth();
+
+const form = ref({
+  client_type:       'individual',
+  name:              '',
+  contact_person:    '',
+  email:             '',
+  password:          '',
+  password_confirmation: '',
+  phone:             '',
+  address:           '',
+  additional_info:   '',
+});
+
+
+
+async function handleRegister() {
+  // simple client-side sanity:
+  if (form.value.password !== form.value.password_confirmation) {
+    return alert("Passwords don't match");
+  }
+
+  // strip out contact_person if not needed
+  const payload = { ...form.value };
+  // if (payload.client_type !== 'company') {
+  //   delete payload.contact_person;
+  // }
+
+  if(payload.client_type === 'company'){
+    payload.company_name = payload.name;
+  } else {
+    delete payload.company_name;
+    delete payload.contact_person;
+  }
+
+  try {
+    await register(payload);
+    router.push({ name: 'Dashboard' });
+  } catch (e) {
+    // register() already sets `errorMessage`
+  }
+}
+</script>
+
+
+<!-- <template>
   <div class="flex items-center justify-center min-h-screen bg-gray-50 p-4">
     <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm border border-gray-100">
       <div class="text-center mb-6">
@@ -122,7 +271,7 @@ const handleRegister = async () => {
 .btn-modern-green {
   @apply bg-green-600 text-white py-2.5 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200 shadow-md hover:shadow-lg;
 }
-</style>
+</style> -->
 
 <!--   -->
 

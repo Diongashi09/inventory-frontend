@@ -9,7 +9,25 @@
     <nav class="flex-grow px-2 mt-4 space-y-1 overflow-y-auto">
       <!-- Links visible to Admin, Manager, Client -->
       <SidebarLink icon="fas fa-tachometer-alt" text="Dashboard" :to="{ name: 'Dashboard' }" :requiredRoles="['Admin', 'Manager', 'Client']" exact />
-      <SidebarLink icon="fas fa-box" text="Products" :to="{ name: 'Products' }" :requiredRoles="['Admin', 'Manager', 'Client']" />
+      <!-- <SidebarLink icon="fas fa-box" text="Products" :to="{ name: 'Products' }" :requiredRoles="['Admin', 'Manager', 'Client']" /> -->
+
+      <!-- Client-Specific Product Browsing Link -->
+      <SidebarLink
+        v-if="hasAnyRole(['Client'])"
+        icon="fas fa-store"
+        text="Shop Products"
+        :to="{ name: 'ClientProductList' }"
+        :requiredRoles="['Client']"
+      />
+
+      <!-- Admin/Manager Product Management Link -->
+      <SidebarLink
+        v-if="hasAnyRole(['Admin', 'Manager'])"
+        icon="fas fa-box"
+        text="Products"
+        :to="{ name: 'Products' }"
+        :requiredRoles="['Admin', 'Manager']"
+      />
 
       <!-- Client-Specific Links -->
       <SidebarLink
@@ -34,6 +52,21 @@
       <SidebarLink v-if="hasAnyRole(['Admin', 'Manager'])" icon="fas fa-truck" text="Shippings" :to="{ name: 'Shippings' }" :requiredRoles="['Admin', 'Manager']" />
       <SidebarLink v-if="hasAnyRole(['Admin', 'Manager'])" icon="fas fa-exchange-alt" text="Transactions" :to="{ name: 'Transactions' }" :requiredRoles="['Admin', 'Manager']" />
       <SidebarLink v-if="hasAnyRole(['Admin'])" icon="fas fa-user-tie" text="Employees" :to="{ name: 'Employees' }" :requiredRoles="['Admin']" />
+
+      <SidebarLink
+        icon="fas fa-bullhorn"
+        text="Announcements"
+        :to="{ name: 'Announcements' }"
+        :requiredRoles="['Admin', 'Manager']"
+      />
+      <!-- <SidebarLink
+        v-if="hasAnyRole(['Admin', 'Manager'])"
+        icon="fas fa-plus-square"
+        text="Create Announcement"
+        :to="{ name: 'CreateAnnouncement' }"
+        :requiredRoles="['Admin', 'Manager']"
+        class="ml-4"
+      /> -->
     </nav>
 
     <!-- <nav class="flex-grow px-2 mt-4 space-y-1 overflow-y-auto">
@@ -141,6 +174,7 @@ const handleLogout = async () => {
   router.push({ name: 'Login' });
 };
 </script>
+
 
 <!-- <script setup>
 import SidebarLink from '@/components/Sidebar/SidebarLink.vue';

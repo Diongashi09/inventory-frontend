@@ -9,7 +9,6 @@ const errorMessage = ref(null);
 export function useInvoices() {
   const { api } = useAxios(); // Initialize useAxios inside the composable function
 
-
   const clearErrorMessage = () => {
     errorMessage.value = null;
   };
@@ -19,7 +18,7 @@ export function useInvoices() {
     clearErrorMessage();
     try {
       const response = await api.get('/invoices');
-      invoices.value = response.data.data;
+      invoices.value = response.data.data || [];
     } catch (error) {
       console.error("Error fetching invoices:", error);
       errorMessage.value = error.response?.data?.message || 'Failed to load invoices.';
@@ -33,7 +32,7 @@ export function useInvoices() {
     clearErrorMessage();
     try {
       const response = await api.get(`/invoices/${id}`);
-      invoice.value = response.data;
+      invoice.value = response.data.data || null;
       return invoice.value;
     } catch (error) {
       console.error(`Error fetching invoice with ID ${id}:`, error);
@@ -47,8 +46,12 @@ export function useInvoices() {
     isLoading.value = true;
     clearErrorMessage();
     try {
+      const token = localStorage.getItem('authToken');
+      console.log("Token before POST:",token);
+
       const response = await api.post('/invoices', invoiceData);
       console.log('Invoice created:', response.data);
+      // return response.data.invoice;
       return response.data.data;
     } catch (error) {
       console.error("Error creating invoice:", error);

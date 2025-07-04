@@ -5,20 +5,24 @@
     <!-- Announcements Section (Visible to Admin, Manager, Client) -->
     <div v-if="announcements.length > 0" class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 mb-6 rounded shadow-sm">
       <div class="flex items-center justify-between mb-2">
-        <h2 class="font-bold text-lg">Announcements</h2>
-        <span class="text-sm">Stay Updated!</span>
+        <h2 class="font-bold text-lg">Latest Announcement</h2>
+        <router-link :to="{ name: 'Announcements' }" class="text-sm text-blue-700 hover:underline">View All</router-link>
       </div>
-      <div v-for="announcement in announcements" :key="announcement.id" class="mb-3 p-2 border-b border-blue-200 last:border-b-0">
-        <h3 class="font-semibold text-blue-900">{{ announcement.title }}</h3>
-        <p class="text-sm text-blue-700">{{ announcement.content }}</p>
-        <p v-if="announcement.creator" class="text-xs text-blue-600 mt-1">
-          - Posted by {{ announcement.creator.name }} on {{ formatDate(announcement.published_at) }}
+      <!-- Display only the first announcement (since we're fetching only one) -->
+      <div class="mb-3 p-2 border-b border-blue-200 last:border-b-0">
+        <h3 class="font-semibold text-blue-900">{{ announcements[0].title }}</h3>
+        <p class="text-sm text-blue-700 whitespace-pre-wrap">{{ truncateContent(announcements[0].content, 150) }}</p>
+        <p v-if="announcements[0].creator" class="text-xs text-blue-600 mt-1">
+          - Posted by {{ announcements[0].creator.name }} on {{ formatDate(announcements[0].published_at) }}
         </p>
       </div>
     </div>
     <div v-else-if="announcementLoading" class="text-center text-gray-500 mb-6">Loading announcements...</div>
     <div v-else-if="announcementError" class="text-red-600 text-center p-4 bg-red-100 border border-red-200 rounded-md mb-6">
       {{ announcementError }}
+    </div>
+    <div v-else class="text-center text-gray-500 p-4 bg-gray-50 rounded-md mb-6">
+      No active announcements at the moment.
     </div>
 
     <!-- Welcome Section (Visible to all authenticated users) -->
@@ -71,15 +75,15 @@
     </div>
 
     <!-- Common sections (e.g., Help & Support) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-      <div class="bg-white shadow-md rounded-lg p-4">
+    <div class="max-w-md mx-auto mt-6 px-4">
+      <div class="bg-white shadow-md rounded-lg p-4 w-full">
         <h3 class="text-lg font-semibold mb-2">Help & Support</h3>
         <p class="text-gray-600">
           Need assistance? Visit our <router-link :to="{name: 'Dashboard'}" class="text-indigo-600 hover:underline">support page</router-link> or contact an administrator.
         </p>
       </div>
-      <!-- You can add more common widgets here if desired -->
     </div>
+
   </div>
 </template>
 
@@ -190,17 +194,17 @@ const isAnyLoading = computed(() =>
 // Derived Data for Cards - NEW COMPUTED PROPERTIES for totals
 const totalProductsCount = computed(() => products.value?.length ?? 0);
 const totalEmployeesCount = computed(() => employees.value?.length ?? 0);
-const totalInvoicesCount = computed(() => invoices.value?.data?.length ?? 0);
+const totalInvoicesCount = computed(() => invoices.value?.length ?? 0);
 const totalSuppliesCount = computed(() => supplies.value?.length ?? 0);
 
 
 const pendingInvoicesCount = computed(() => {
   // Debug log: This log already indicates invoices.value is an object with data property
   // console.log('invoices.value (in pendingInvoicesCount):', invoices.value);
-  if (!Array.isArray(invoices.value?.data)) {
+  if (!Array.isArray(invoices.value)) {
     return 0;
   }
-  return invoices.value.data.filter(invoice =>
+  return invoices.value.filter(invoice =>
     invoice.status === 'pending' || invoice.status === 'awaiting_stock'
   ).length;
 });
@@ -233,8 +237,8 @@ const prepareInvoiceStatusData = () => {
 
   // Debug log: This log confirms invoices.value is an object with data property
   // console.log('invoices.value (in prepareInvoiceStatusData before loop):', invoices.value);
-  if (Array.isArray(invoices.value?.data)) {
-    invoices.value.data.forEach(invoice => {
+  if (Array.isArray(invoices.value)) {
+    invoices.value.forEach(invoice => {
       if (statusCounts.hasOwnProperty(invoice.status)) {
         statusCounts[invoice.status]++;
       }
@@ -283,7 +287,7 @@ const prepareMonthlyTransactionData = () => {
 onMounted(async () => {
   // Fetch data only if the user has a role that needs it
   // This helps optimize API calls for clients who don't need all dashboard stats
-  if (hasAnyRole(['Admin', 'Manager']).value) { // Check if Admin or Manager
+  if (hasAnyRole(['Admin', 'Manager'])) { // Check if Admin or Manager
     await Promise.all([
       fetchProducts(),
       fetchInvoices(),
@@ -298,7 +302,7 @@ onMounted(async () => {
   }
 
   // Always fetch active announcements for all roles (Admin, Manager, Client)
-  fetchAnnouncements();
+  fetchAnnouncements({ limit: 1 });
 
   // --- DEBUGGING LOGS (keep these for your own verification) ---
   console.log('--- Dashboard Data After Fetching (from onMounted) ---');
@@ -340,6 +344,13 @@ const formatDate = (dateString) => {
   if (!dateString) return '';
   const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
   return new Date(dateString).toLocaleDateString(undefined, options);
+};
+
+const truncateContent = (content, maxLength) => {
+  if (content.length <= maxLength) {
+    return content;
+  }
+  return content.substring(0, maxLength) + '...';
 };
 
 </script>

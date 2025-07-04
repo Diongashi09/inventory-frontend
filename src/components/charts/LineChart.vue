@@ -91,6 +91,52 @@
     }
   };
   
+// const renderChart = () => {
+//   const canvas = chartCanvas.value;
+//   if (!canvas || !canvas.getContext) return;
+
+//   const ctx = canvas.getContext('2d');
+//   if (!ctx || !props.labels || !props.data || props.labels.length === 0 || props.data.length === 0) {
+//     if (chartInstance.value) {
+//       chartInstance.value.destroy();
+//       chartInstance.value = null;
+//     }
+//     return;
+//   }
+
+//   if (chartInstance.value) {
+//     chartInstance.value.data.labels = props.labels;
+//     chartInstance.value.data.datasets[0].data = props.data;
+//     chartInstance.value.update();
+//   } else {
+//     chartInstance.value = new Chart(ctx, {
+//       type: 'line', // or 'line'
+//       data: {
+//         labels: props.labels,
+//         datasets: [{
+//           label: props.title,
+//           data: props.data,
+//           backgroundColor: props.backgroundColor,
+//           borderColor: props.borderColor,
+//           borderWidth: 1,
+//           fill: props.fill ?? false
+//         }],
+//       },
+//       options: {
+//         responsive: true,
+//         maintainAspectRatio: false,
+//         scales: {
+//           y: { beginAtZero: true }
+//         },
+//         plugins: {
+//           legend: { display: false }
+//         }
+//       }
+//     });
+//   }
+// };
+
+
   onMounted(() => {
     // Initial render attempt. Watchers will handle subsequent updates.
     // Ensure Chart.js is loaded if using CDN (though typically 'chart.js/auto' implies npm install)

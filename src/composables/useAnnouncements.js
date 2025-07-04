@@ -13,20 +13,50 @@ export function useAnnouncements() {
     errorMessage.value = null
   }
 
-  const fetchAnnouncements = async () => {
-    isLoading.value = true
-    clearErrorMessage()
+  const fetchAnnouncements = async (options = {}) => {
+    isLoading.value = true;
+    clearErrorMessage();
     try {
-      const response = await api.get('/announcements')
-      announcements.value = response.data || []
+      let url = '/announcements';
+      const params = new URLSearchParams();
+
+      if (options.limit) {
+        params.append('limit', options.limit);
+      }
+      // Add other filters/parameters if needed in the future
+      // if (options.someFilter) {
+      //   params.append('some_filter', options.someFilter);
+      // }
+
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+
+      const response = await api.get(url);
+      announcements.value = response.data || [];
     } catch (error) {
-      console.error("Error fetching announcements:", error)
+      console.error("Error fetching announcements:", error);
       errorMessage.value =
-        error.response?.data?.message || 'Failed to load announcements.'
+        error.response?.data?.message || 'Failed to load announcements.';
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
-  }
+  };
+
+  // const fetchAnnouncements = async () => {
+  //   isLoading.value = true
+  //   clearErrorMessage()
+  //   try {
+  //     const response = await api.get('/announcements')
+  //     announcements.value = response.data || []
+  //   } catch (error) {
+  //     console.error("Error fetching announcements:", error)
+  //     errorMessage.value =
+  //       error.response?.data?.message || 'Failed to load announcements.'
+  //   } finally {
+  //     isLoading.value = false
+  //   }
+  // }
 
   const getAnnouncementById = async (id) => {
     isLoading.value = true

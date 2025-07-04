@@ -9,7 +9,7 @@
       <div v-else-if="!clientProfile" class="text-center text-gray-500 p-4 bg-gray-50 rounded-md">
         No client profile found for your account. Please contact support.
       </div>
-      <div v-else class="bg-white shadow-md rounded-lg p-6 max-w-lg mx-auto">
+      <div v-else-if="clientProfile" class="bg-white shadow-md rounded-lg p-6 max-w-lg mx-auto">
         <form @submit.prevent="handleProfileUpdate" class="space-y-4">
           <!-- User Email (Read-only) -->
           <div>
@@ -27,7 +27,8 @@
           <!-- Client Name / Company Name (editable) -->
           <div>
             <label for="clientName" class="block text-sm font-medium text-gray-700">
-              {{ clientProfile.client_type === 'individual' ? 'Your Name' : 'Company Name' }}
+              <!-- {{ clientProfile.client_type === 'individual' ? 'Your Name' : 'Company Name' }} -->
+              {{ clientType === 'individual' ? 'Your Name' : 'Company Name' }}
             </label>
             <input
               type="text"
@@ -39,7 +40,7 @@
           </div>
   
           <!-- Contact Person (conditional, editable) -->
-          <div v-if="clientProfile.client_type === 'company'">
+          <div v-if="clientType === 'company'">
             <label for="contactPerson" class="block text-sm font-medium text-gray-700">Contact Person</label>
             <input
               type="text"
@@ -103,7 +104,7 @@
   </template>
   
   <script setup>
-  import { ref, onMounted, watch } from 'vue';
+  import { ref, onMounted, watch, computed } from 'vue';
   import { useAuth } from '@/composables/useAuth';
   import { useClients } from '@/composables/useClients'; // Import the updated useClients composable
   
@@ -119,6 +120,8 @@
     additional_info: '',
   });
   
+  const clientType = computed(() => clientProfile.value?.client_type);
+
   onMounted(async () => {
     await fetchMyProfile(); // Fetch the client's own profile data
   });
