@@ -62,7 +62,7 @@ const hasRequiredRole = computed(() => {
 <style scoped>
 .sidebar-link-base {
   @apply relative flex items-center gap-3 px-8 py-3 transition-colors hover:bg-gray-100 text-gray-800 rounded-md;
-  padding-left: 2rem;
+  padding-left: 1rem;
   position: relative;
 }
 

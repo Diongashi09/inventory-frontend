@@ -10,10 +10,9 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Stock per Unit</th>
             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price (Excl. VAT)</th>
             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price (Incl. VAT)</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
@@ -27,21 +26,21 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ product.id }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.name }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product.category?.name || 'N/A' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ product.stock_quantity }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ product.stock_quantity }} - {{ product.unit }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">${{ Number(product.price_excl_vat).toFixed(2) }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">${{ Number(product.price_incl_vat).toFixed(2) }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product.unit }}</td>
+            <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product.unit }}</td> -->
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" @click.stop>
               <button
                 v-if="hasAnyRole(['Admin', 'Manager'])"
-                @click="$emit('edit', product)"
+                @click.stop="$emit('edit', product)"
                 class="text-indigo-600 hover:text-indigo-900 mr-4"
               >
                 Edit
               </button>
               <button
                 v-if="hasRole('Admin')"
-                @click="$emit('delete', product)"
+                @click.stop="$emit('delete', product)"
                 class="text-red-600 hover:text-red-900"
               >
                 Delete

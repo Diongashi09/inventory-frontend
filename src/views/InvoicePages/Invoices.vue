@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-semibold">Invoices</h1>
       <button
         v-if="hasAnyRole(['Admin', 'Manager', 'Staff'])"
-        class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out whitespace-nowrap"
         @click="goToCreateInvoice"
       >
         Create New Invoice

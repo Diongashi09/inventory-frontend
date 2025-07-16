@@ -13,12 +13,12 @@ export function useShippings() {
     errorMessage.value = null;
   };
 
-  const fetchShippings = async () => {
+  const fetchShippings = async (params = {}) => {
     isLoading.value = true;
     clearErrorMessage();
     try {
       // FIX: Assuming your ShippingController@index returns data directly (no 'data' key wrapper)
-      const response = await api.get('/shippings');
+      const response = await api.get('/shippings', {params});
       shippings.value = response.data || []; // Assign response.data directly
     } catch (error) {
       console.error("Error fetching shippings:", error);

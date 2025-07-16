@@ -13,11 +13,11 @@ export function useInvoices() {
     errorMessage.value = null;
   };
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = async (params = {}) => {
     isLoading.value = true;
     clearErrorMessage();
     try {
-      const response = await api.get('/invoices');
+      const response = await api.get('/invoices', { params });
       invoices.value = response.data.data || [];
     } catch (error) {
       console.error("Error fetching invoices:", error);

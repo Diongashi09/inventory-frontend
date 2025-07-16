@@ -60,6 +60,9 @@ import EmployeeForm from '@/components/Employees/EmployeeForm.vue';
 import Announcements from '@/views/AnnouncementPages/Announcements.vue'; // Assuming you have a list view
 import AnnouncementForm from '@/views/AnnouncementPages/AnnouncementForm.vue';
 
+import VendorsPage from '@/views/Vendors/VendorsPage.vue';
+import VendorCompanyForm from '@/components/Vendors/VendorCompanyForm.vue';
+
 const routes = [
   { 
     path: '/login', 
@@ -109,7 +112,7 @@ const routes = [
       },
       { path: 'products/new', name: 'CreateProduct', component: ProductForm, meta: { requiredRoles: ['Admin', 'Manager'] } },
       { path: 'products/:id', name: 'ProductDetails', component: ProductDetails, props: true, meta: { requiredRoles: ['Admin', 'Manager', 'Client'] } },
-      { path: 'products/:id/edit', name: 'EditProduct', component: ProductForm, props: true, meta: { requiredRoles: ['Admin', 'Manager'] } },
+      // { path: 'products/:id/edit', name: 'EditProduct', component: ProductForm, props: true, meta: { requiredRoles: ['Admin', 'Manager'] } },
 
       //ProductList
       { path: 'shop', name: 'ClientProductList', component: ClientProductList, meta: { requiredRoles: ['Client'] }},
@@ -164,6 +167,26 @@ const routes = [
       // Announcements (NEW ROUTES)
       { path: 'announcements', name: 'Announcements', component: Announcements, meta: { requiredRoles: ['Admin', 'Manager', 'Client'] } },
       { path: 'announcements/new', name: 'CreateAnnouncement', component: AnnouncementForm, meta: { requiredRoles: ['Admin', 'Manager'] } },
+      // VENDOR ROUTES (UPDATED)
+      {
+        path: 'vendors',
+        name: 'VendorsPage',
+        component: VendorsPage,
+        meta: { requiredRoles: ['Admin', 'Manager'] }
+      },
+      {
+        path: 'vendors/new',
+        name: 'CreateVendorCompany',
+        component: VendorCompanyForm, // <-- Use the new form component
+        meta: { requiredRoles: ['Admin', 'Manager'] }
+      },
+      {
+        path: 'vendors/:id/edit',
+        name: 'EditVendorCompany',
+        component: VendorCompanyForm, // <-- Use the new form component
+        props: true, // Pass route params (like 'id') as props to the component
+        meta: { requiredRoles: ['Admin', 'Manager'] }
+      },
     ]
   },
   {
@@ -245,6 +268,7 @@ router.beforeEach((to,from,next) => {
     next();
 });
 
+export default router;
 
 //qikjo posht previously
 // router.beforeEach((to, from, next) => {
@@ -285,7 +309,7 @@ router.beforeEach((to,from,next) => {
 //   }
 // });
 
-export default router;
+// export default router;
 
 
 // space

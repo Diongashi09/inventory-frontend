@@ -43,6 +43,19 @@
             class="w-full border p-2 rounded mt-1"
           />
         </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Low Stock Threshold</label>
+          <input
+            v-model.number="local.low_stock_threshold"
+            type="number"
+            min="0"
+            required
+            class="w-full border p-2 rounded mt-1"
+          />
+          <p class="mt-1 text-xs text-gray-500">An alert email will be sent when stock quantity reaches or falls below this number.</p>
+        </div>
+
         <div>
           <label class="block text-sm font-medium text-gray-700">Price (Excl. VAT)</label>
           <input
@@ -118,6 +131,7 @@ const local = reactive({
   description: '',
   category_id: null,
   stock_quantity: 0,
+  low_stock_threshold: 0,
   price_excl_vat: 0,
   vat_rate: 0,
   unit: 'pcs',
@@ -145,6 +159,7 @@ watch(
       description: prod.description || '',
       category_id: prod.category_id || null,
       stock_quantity: prod.stock_quantity || 0,
+      low_stock_threshold: prod.low_stock_threshold ?? 5, // Populate, default to 5 if not set
       price_excl_vat: prod.price_excl_vat || 0,
       vat_rate: prod.vat_rate || 0,
       unit: prod.unit || 'pcs',

@@ -51,7 +51,7 @@
           :disabled="isEditing" 
         >
           <option :value="null">Select a Supplier (Optional)</option>
-          <option v-for="client in clients" :key="client.id" :value="client.id">{{ client.name }}</option>
+          <option v-for="vendor in vendors" :key="vendor.id" :value="vendor.id">{{ vendor.name }}</option>
         </select>
       </div>
 
@@ -150,7 +150,7 @@
       </div>
 
       <!-- Status (only editable in edit mode, and is the only thing updateable) -->
-      <div>
+      <div v-if="isEditing">
         <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
         <select
           id="status"
@@ -202,14 +202,16 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useSupplies } from '@/composables/useSupplies';
-import { useClients } from '@/composables/useClients';
+//import { useClients } from '@/composables/useClients';
 import { useProducts } from '@/composables/useProducts';
+import { useVendors } from '@/composables/useVendors';
 
 const router = useRouter();
 const route = useRoute();
 const { supply: fetchedSupplyFromComposable, getSupplyById, createSupply, updateSupply, errorMessage, clearErrorMessage } = useSupplies();
-const { clients, fetchClients } = useClients();
+//const { clients, fetchClients } = useClients();
 const { products, fetchProducts } = useProducts();
+const { vendors, fetchVendors } = useVendors();
 
 const isEditing = computed(() => route.params.id !== undefined);
 
@@ -258,13 +260,22 @@ const calculateTotals = () => {
     sub += (Number(item.quantity) || 0) * (Number(item.unit_price) || 0);
   });
   localSupply.subtotal = sub;
-  localSupply.total = sub;
+  localSupply.total = sub + (Number(localSupply.tariff_fee) || 0) + (Number(localSupply.import_cost) || 0);
 };
+
+watch(() => localSupply.items,       calculateTotals, { deep: true });
+watch(() => localSupply.tariff_fee,  calculateTotals);
+watch(() => localSupply.import_cost, calculateTotals);
+
+onMounted(() => {
+  calculateTotals();
+});
 
 // Initialize form data when component mounts or route changes for editing
 onMounted(async () => {
   clearErrorMessage();
-  await fetchClients();
+  //await fetchClients();
+  await fetchVendors();
   await fetchProducts();
 
   if (isEditing.value && route.params.id) {
@@ -353,7 +364,7 @@ const submitForm = async () => {
         supplier_id: localSupply.supplier_id,
         tariff_fee: localSupply.tariff_fee || undefined,
         import_cost: localSupply.import_cost || undefined,
-        status: localSupply.status || 'pending',
+        // status: localSupply.status || 'pending',
         items: localSupply.items.map(item => ({
           product_id: item.product_id,
           quantity: item.quantity,

@@ -5,6 +5,16 @@
       <!-- No "New Shipping" button as shippings are created via invoices -->
     </div>
 
+    <div class="mb-4">
+      <input
+        type="text"
+        v-model="searchQuery"
+        @input="handleSearch"
+        placeholder="Search by Tracking ID, Invoice #, or Client name..."
+        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      />
+    </div>
+
     <div v-if="isLoading" class="text-center text-gray-600 py-8">
       Loading shippings...
     </div>
@@ -38,12 +48,23 @@ const { hasAnyRole } = useAuth(); // To control who can update status if needed
 const router = useRouter();
 
 const statusUpdateMessage = ref('');
+const searchQuery = ref('');
+let searchTimeout = null;
 
-async function loadAllShippings() {
-  await fetchShippings();
+async function loadAllShippings(params = {}) {
+  await fetchShippings(params);
 }
 
-onMounted(loadAllShippings);
+onMounted(() => {
+  loadAllShippings();
+});
+
+const handleSearch = () => {
+  clearTimeout(searchTimeout); // Clear previous timeout
+  searchTimeout = setTimeout(() => {
+    loadAllShippings({ search: searchQuery.value }); // Trigger fetch after debounce
+  }, 300); // 300ms debounce time
+};
 
 function goToShippingDetails(shipping) {
   router.push({ name: 'ShippingDetails', params: { id: shipping.id } });
@@ -80,7 +101,7 @@ async function onUpdateStatus(shippingData) {
     statusUpdateMessage.value = `Status for ${shippingData.tracking_id} updated to ${newStatus}.`;
     setTimeout(() => statusUpdateMessage.value = '', 3000); // Clear message after 3 seconds
     // Re-fetch to update the table immediately
-    await loadAllShippings();
+    await loadAllShippings({search: searchQuery.value});
   } catch (error) {
     console.error("Failed to update status:", error);
     alert("Failed to update status: " + (errorMessage.value || error.message));

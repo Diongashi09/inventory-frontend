@@ -13,11 +13,11 @@ export function useEmployees() {
     errorMessage.value = null;
   };
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = async (params = {}) => {
     isLoading.value = true;
     clearErrorMessage();
     try {
-      const response = await api.get('/users');
+      const response = await api.get('/users', {params});
       employees.value = response.data || [];
     } catch (error) {
       console.error("Error fetching employees:", error);

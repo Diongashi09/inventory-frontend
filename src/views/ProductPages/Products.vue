@@ -1,32 +1,56 @@
 <template>
   <div class="p-6 space-y-4">
-    <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-semibold">Products Management</h1>
-      <button
-        v-if="hasAnyRole(['Admin', 'Manager'])"
-        class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-        @click="goToCreateProduct"
-      >
-        New Product
-      </button>
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-gray-800">Products Management</h1>
     </div>
 
-    <!-- Filter & Sort Controls -->
-    <div class="flex items-center gap-4 mb-4">
-      <!-- Category Filter -->
-      <select v-model="selectedCategory" class="border px-3 py-2 rounded-md text-sm">
-        <option value="">All Categories</option>
-        <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-          {{ cat.name }}
-        </option>
-      </select>
+    <CategoryManagerModal
+      v-if="showCategoryModal"
+      :categories="categories"
+      @close="closeCategoryModal"
+      @category-added="handleCategoryAdded"
+      @category-deleted="handleCategoryDeleted"
+    />
 
-      <!-- Sort By -->
-      <select v-model="sortBy" class="border px-3 py-2 rounded-md text-sm">
-        <option value="">Sort by</option>
-        <option value="price_asc">Price: Low to High</option>
-        <option value="price_desc">Price: High to Low</option>
-      </select>
+    <div class="flex items-center gap-4 mb-4 flex-wrap justify-between"> <div class="flex items-center gap-4 flex-wrap">
+        <input
+          type="text"
+          v-model="searchQuery"
+          @input="handleSearch"
+          placeholder="Search by name or description..."
+          class="border border-gray-300 px-3 py-2 rounded-md text-sm w-full sm:w-64 focus:ring-blue-500 focus:border-blue-500"
+        />
+
+        <select v-model="selectedCategory" class="border border-gray-300 px-3 py-2 rounded-md text-sm w-full sm:w-48 focus:ring-blue-500 focus:border-blue-500">
+          <option value="">All Categories</option>
+          <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+            {{ cat.name }}
+          </option>
+        </select>
+
+        <select v-model="sortBy" class="border border-gray-300 px-3 py-2 rounded-md text-sm w-full sm:w-48 focus:ring-blue-500 focus:border-blue-500">
+          <option value="">Sort by</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+        </select>
+      </div>
+
+      <div class="flex space-x-3 mt-4 sm:mt-0"> <button
+          v-if="hasAnyRole(['Admin', 'Manager'])"
+          class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out whitespace-nowrap"
+          @click="showCategoryManager"
+        >
+          Manage Categories
+        </button>
+
+        <button
+          v-if="hasAnyRole(['Admin', 'Manager'])"
+          class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out whitespace-nowrap"
+          @click="goToCreateProduct"
+        >
+          New Product
+        </button>
+      </div>
     </div>
 
     <div v-if="isLoading" class="text-center text-gray-600 py-8">
@@ -41,14 +65,13 @@
       @delete="requestDelete"
     />
 
-    <ProductForm 
+    <ProductForm
       v-if="showForm"
       :product="editingProduct"
       @save="onSave"
       @cancel="closeForm"
     />
 
-    <!-- Delete Confirmation Modal -->
     <div
       v-if="showDeleteModal"
       class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50"
@@ -60,15 +83,14 @@
           <span class="font-bold">{{ productToDelete?.name }}</span>? This action cannot be undone.
         </p>
         <div class="flex justify-end space-x-2 mt-6">
-          <button @click="cancelDelete" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
-          <button @click="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+          <button @click="cancelDelete" class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 transition duration-150 ease-in-out">Cancel</button>
+          <button @click="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition duration-150 ease-in-out">
             Delete
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Notification -->
     <div
       v-if="notification.show"
       :class="[
@@ -81,32 +103,29 @@
   </div>
 </template>
 
-
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-// import {
-//   products,
-//   fetchProducts,
-//   deleteProduct
-// } from '@/composables/useProducts'; // Absolute path
 import { useAuth } from '@/composables/useAuth';
 import { useProducts} from '@/composables/useProducts';
 
 
-import ProductTable from '@/components/Products/ProductTable.vue'; // Corrected path
+import ProductTable from '@/components/Products/ProductTable.vue';
 import ProductForm from '@/components/Products/ProductForm.vue';
+import CategoryManagerModal from '@/components/Products/CategoryManagerModal.vue';
 
 const router = useRouter();
 const { hasAnyRole } = useAuth();
-const { 
-  products, 
+const {
+  products,
   categories,
-  fetchProducts, 
+  fetchProducts,
   fetchCategories,
-  deleteProduct, 
-  updateProduct, 
-  createProduct 
+  deleteProduct,
+  updateProduct,
+  createProduct,
+  createCategory,
+  deleteCategory
 } = useProducts();
 
 const isLoading = ref(true);
@@ -118,12 +137,38 @@ const productToDelete = ref(null);
 
 const selectedCategory = ref('');
 const sortBy = ref('');
+const searchQuery = ref(''); // New reactive variable for search
+
+let searchTimeout = null; // For debouncing search input
 
 const notification = ref({
   show: false,
   message: '',
   type: 'success'
 });
+
+const showCategoryModal = ref(false);
+
+function showCategoryManager(){
+  showCategoryModal.value = true;
+}
+
+async function closeCategoryModal(){
+  showCategoryModal.value = false;
+  await fetchCategories();
+  await loadAllProducts();
+}
+
+async function handleCategoryAdded() {
+  showNotification('Category added successfully!','success');
+  await fetchCategories();
+}
+
+async function handleCategoryDeleted(){
+  showNotification('Category deleted successfully!','success');
+  await fetchCategories();
+  await loadAllProducts();
+}
 
 function requestDelete(product) {
   productToDelete.value = product;
@@ -164,6 +209,7 @@ async function loadAllProducts() {
     await fetchProducts({
       category_id: selectedCategory.value || undefined,
       sort_by: sortBy.value || undefined,
+      search: searchQuery.value || undefined, // Pass search query to fetchProducts
     });
   } catch (error) {
     console.error("Error loading products:", error);
@@ -173,23 +219,28 @@ async function loadAllProducts() {
   }
 }
 
+const handleSearch = () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    loadAllProducts();
+  }, 300); // Debounce search input by 300ms
+};
+
 onMounted(async () => {
   await fetchCategories();
   await loadAllProducts();
 });
 
-watch([selectedCategory,sortBy],loadAllProducts);
+watch([selectedCategory, sortBy], loadAllProducts); // Watch filters for changes
 
 function goToCreateProduct() {
   editingProduct.value = {};
   showForm.value = true;
-  // router.push({ name: 'CreateProduct' });
 }
 
 function goToEditProduct(product) {
   editingProduct.value = { ...product };
   showForm.value = true;
-  // router.push({ name: 'EditProduct', params: { id: product.id } });
 }
 
 function closeForm() {
@@ -202,32 +253,19 @@ async function onSave(productData) {
   try {
     if (productData.id) {
       await updateProduct(productData.id, productData);
+      showNotification('Product updated successfully!', 'success');
     } else {
       await createProduct(productData);
+      showNotification('Product created successfully!', 'success');
     }
     await loadAllProducts();
     closeForm();
   } catch (error) {
-    alert("Failed to save product: " + (error.response?.data?.message || error.message));
+    showNotification("Failed to save product: " + (error.response?.data?.message || error.message), 'error');
   } finally {
     isLoading.value = false;
   }
 }
-
-// async function onDelete(id) {
-//   if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return;
-//   isLoading.value = true;
-//   try {
-//     await deleteProduct(id);
-//     alert('Product deleted successfully!');
-//     await loadAllProducts();
-//   } catch (error) {
-//     console.error("Error deleting product:", error);
-//     alert("Failed to delete product: " + (error.response?.data?.message || error.message));
-//   } finally {
-//     isLoading.value = false;
-//   }
-// }
 </script>
 
 <style>

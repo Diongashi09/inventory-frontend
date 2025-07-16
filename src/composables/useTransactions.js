@@ -13,11 +13,11 @@ export function useTransactions() {
     errorMessage.value = null;
   };
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = async (params = {}) => {
     isLoading.value = true;
     clearErrorMessage();
     try {
-      const response = await api.get('/transactions');
+      const response = await api.get('/transactions', {params});
       transactions.value = response.data.data || [];
     } catch (error) {
       console.error("Error fetching transactions:", error);

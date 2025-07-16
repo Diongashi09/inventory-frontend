@@ -20,11 +20,11 @@ export function useClients() {
   };
 
   //Admin/Manager Client Management
-  const fetchClients = async () => {
+  const fetchClients = async (params = {}) => {
     isLoading.value = true;
     clearErrorMessage();
     try {
-      const response = await api.get('/clients');
+      const response = await api.get('/clients', { params });
       clients.value = response.data;
       // return client.value;
     } catch (error) {

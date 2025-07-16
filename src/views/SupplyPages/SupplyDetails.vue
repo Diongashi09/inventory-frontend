@@ -19,7 +19,7 @@
           <h2 class="text-xl font-semibold text-gray-700 mb-3">Supply Information</h2>
           <p class="mb-2"><span class="font-medium">ID:</span> {{ supply.id }}</p>
           <!-- Access supplier name via client relationship -->
-          <p class="mb-2"><span class="font-medium">Supplier:</span> {{ supply.client?.name || 'N/A' }}</p>
+          <p class="mb-2"><span class="font-medium">Supplier:</span> {{ supply.supplier_name || supply.supplier?.name || 'N/A' }}</p>
           <p class="mb-2"><span class="font-medium">Supplier Type:</span> {{ supply.supplier_type ? formatStatus(supply.supplier_type) : 'N/A' }}</p>
           <p class="mb-2"><span class="font-medium">Date:</span> {{ formatDate(supply.date) }}</p>
           <p class="mb-2"><span class="font-medium">Status:</span>

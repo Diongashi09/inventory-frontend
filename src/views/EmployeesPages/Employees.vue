@@ -3,11 +3,21 @@
     <div class="flex justify-between items-center">
       <h1 class="text-2xl font-semibold">Employees</h1>
       <button
-        class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+        class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out whitespace-nowrap"
         @click="goToCreateEmployee"
       >
         Create Employee
       </button>
+    </div>
+
+    <div class="mb-4">
+      <input
+        type="text"
+        v-model="searchQuery"
+        @input="handleSearch"
+        placeholder="Search by name or email..."
+        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      />
     </div>
 
     <div v-if="isLoading" class="text-center text-gray-600 py-8">
@@ -34,11 +44,24 @@ import EmployeeTable from '@/components/Employees/EmployeeTable.vue';
 const { employees, fetchEmployees, deleteEmployee, isLoading, errorMessage } = useEmployees();
 const router = useRouter();
 
-async function loadAllEmployees() {
-  await fetchEmployees();
+const searchQuery = ref('');
+let searchTimeout = null;
+
+async function loadAllEmployees(params = {}) {
+  await fetchEmployees(params);
 }
 
-onMounted(loadAllEmployees);
+onMounted(()=>{
+  loadAllEmployees();
+});
+
+// Handle search input with debouncing
+const handleSearch = () => {
+  clearTimeout(searchTimeout); // Clear previous timeout
+  searchTimeout = setTimeout(() => {
+    loadAllEmployees({ search: searchQuery.value }); // Trigger fetch after debounce
+  }, 300); // 300ms debounce time
+};
 
 function goToCreateEmployee() {
   router.push({ name: 'CreateEmployee' });
@@ -55,7 +78,7 @@ function goToEmployeeDetails(employee) {
 async function onDelete(id) {
   if (!confirm('Are you sure you want to delete this employee?')) return;
   await deleteEmployee(id);
-  await loadAllEmployees();
+  await loadAllEmployees({search: searchQuery.value});
 }
 </script>
 

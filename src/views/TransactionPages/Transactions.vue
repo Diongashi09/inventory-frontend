@@ -4,6 +4,16 @@
       <h1 class="text-2xl font-semibold">Transactions</h1>
     </div>
 
+    <div class="mb-4">
+      <input
+        type="text"
+        v-model="searchQuery"
+        @input="handleSearch"
+        placeholder="Search by creator name..."
+        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      />
+    </div>
+
     <div v-if="isLoading" class="text-center text-gray-600 py-8">
       Loading transactions...
     </div>
@@ -18,19 +28,33 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTransactions } from '@/composables/useTransactions';
 import TransactionTable from '@/components/TransactionTable.vue';
 
-const { transactions, fetchTransactions, isLoading } = useTransactions();
+const { transactions, fetchTransactions, isLoading, errorMessage } = useTransactions();
 const router = useRouter();
 
-async function loadAllTransactions() {
-  await fetchTransactions();
+const searchQuery = ref(''); // New reactive variable for search
+let searchTimeout = null; // For debouncing search input
+
+async function loadAllTransactions(params = {}) {
+  await fetchTransactions(params);
 }
 
-onMounted(loadAllTransactions);
+onMounted(() => {
+  loadAllTransactions();
+});
+
+// Handle search input with debouncing
+const handleSearch = () => {
+  clearTimeout(searchTimeout); // Clear previous timeout
+  searchTimeout = setTimeout(() => {
+    loadAllTransactions({ search: searchQuery.value }); // Trigger fetch after debounce
+  }, 300); // 300ms debounce time
+};
+
 
 function goToTransactionDetails(transaction) {
   router.push({ name: 'TransactionDetails', params: { id: transaction.id } });

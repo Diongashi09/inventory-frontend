@@ -3,12 +3,23 @@
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-2xl font-semibold">Clients</h1>
       <button
-        class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+        class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out whitespace-nowrap"
         @click="goToCreateClient"
       >
         New Client
       </button>
     </div>
+
+    <div class="mb-4">
+      <input
+        type="text"
+        v-model="searchQuery"
+        @input="handleSearch"
+        placeholder="Search by name, email, contact person, or phone..."
+        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      />
+    </div>
+
     <ClientTable
       :clients="clients"
       @edit="goToEditClient"
@@ -62,6 +73,8 @@ const showForm = ref(false);
 const editingClient = ref({});
 const showDeleteModal = ref(false);
 const clientToDelete = ref(null);
+const searchQuery = ref('');
+let searchTimeout = null;
 
 const notification = ref({
   show: false,
@@ -69,9 +82,20 @@ const notification = ref({
   type: 'success',
 });
 
+async function loadAllClients(params = {}) {
+  await fetchClients(params);
+}
+
 onMounted(() => {
-  fetchClients();
+  loadAllClients();
 });
+
+const handleSearch = () => {
+  clearTimeout(searchTimeout); // Clear previous timeout
+  searchTimeout = setTimeout(() => {
+    loadAllClients({ search: searchQuery.value }); // Trigger fetch after debounce
+  }, 300); // 300ms debounce time
+};
 
 function goToCreateClient() {
   editingClient.value = {};
@@ -93,6 +117,7 @@ async function onSave(clientData) {
     if (clientData.id) {
       await updateClient(clientData.id, clientData);
       showNotification('Client updated successfully!', 'success');
+      await loadAllClients({search: searchQuery.value});
     } else {
       await createClient(clientData);
       showNotification('Client created successfully!', 'success');

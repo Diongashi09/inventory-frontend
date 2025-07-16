@@ -26,7 +26,7 @@
             ></textarea>
           </div>
   
-          <div>
+          <!-- <div>
             <label for="published_at" class="block text-sm font-medium text-gray-700">Publish Date & Time (Optional)</label>
             <input
               type="datetime-local"
@@ -35,7 +35,7 @@
               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
             <p class="mt-1 text-xs text-gray-500">Leave empty to publish immediately.</p>
-          </div>
+          </div> -->
   
           <div>
             <label for="expires_at" class="block text-sm font-medium text-gray-700">Expiry Date & Time (Optional)</label>
@@ -113,7 +113,7 @@
     const payload = {
       title: form.title,
       content: form.content,
-      published_at: form.published_at || null,
+      // published_at: form.published_at || null,
       expires_at: form.expires_at || null,
     };
   

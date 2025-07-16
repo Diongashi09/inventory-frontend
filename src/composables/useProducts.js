@@ -125,6 +125,38 @@ export function useProducts() {
     }
   };
 
+
+  const createCategory = async (categoryData) => {
+    isLoading.value = true;
+    clearErrorMessage();
+    try {
+      const response = await api.post('/categories',categoryData);
+      console.log('Category created: ',response.data);
+      return response.data;
+    } catch (error){
+      console.error("Error creating category:",error);
+      errorMessage.value = error.response?.data?.message || 'Failed to create category.' ;
+      throw error;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  const deleteCategory = async (id) => {
+    isLoading.value = true;
+    clearErrorMessage();
+    try {
+      await api.delete(`/categories/${id}`);
+      console.log(`Category with ID ${id} deleted.`);
+      categories.value = categories.value.filter(cat => cat.id !== id);
+    } catch (error){
+      console.error(`Error deleting category with ID ${id}:`,error);
+      throw error;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   return {
     products,
     product,
@@ -138,6 +170,8 @@ export function useProducts() {
     createProduct,
     updateProduct,
     deleteProduct,
+    createCategory,
+    deleteCategory
   };
 }
 

@@ -2,12 +2,29 @@
   <div class="p-6 space-y-4">
     <div class="flex justify-between items-center">
       <h1 class="text-2xl font-semibold">Supplies</h1>
-      <button
-        class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-        @click="goToCreateSupply"
-      >
-        New Supply
-      </button>
+
+      <div class="flex space-x-3"> <button
+          class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out whitespace-nowrap" @click="goToManageVendors"
+        >
+          Manage Suppliers
+        </button>
+        <button
+          class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out whitespace-nowrap"
+          @click="goToCreateSupply"
+        >
+          New Supply
+        </button>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <input
+        type="text"
+        v-model="searchQuery"
+        @input="handleSearch"
+        placeholder="Search by reference number or supplier name..."
+        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      />
     </div>
 
     <div v-if="isLoading" class="text-center text-gray-600 py-8">
@@ -68,15 +85,31 @@ const router = useRouter();
 
 const showDeleteModal = ref(false);
 const supplyToDeleteId = ref(null);
+const searchQuery = ref('');
 
-async function loadAllSupplies() { // Renamed from loadAllInvoices
-  await fetchSupplies();
+let searchTimeout = null;
+
+async function loadAllSupplies(params = {}) { // Renamed from loadAllInvoices
+  await fetchSupplies(params);
 }
 
-onMounted(loadAllSupplies);
+onMounted(() => {
+  loadAllSupplies();
+});
+
+const handleSearch = () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    loadAllSupplies({ search: searchQuery.value });
+  },300);
+}
 
 function goToCreateSupply() { // Corrected navigation for creation
   router.push({ name: 'CreateSupply' });
+}
+
+function goToManageVendors() {
+  router.push({ name: 'VendorsPage' }); // Use the name of your new VendorsPage route
 }
 
 function goToEditSupply(supply) {
@@ -101,6 +134,7 @@ async function performDelete() { // Action after confirming delete
       // The `deleteSupply` composable already updates `supplies.value` by filtering.
       // So, `await loadAllSupplies()` is not strictly necessary here unless you want
       // to re-fetch fresh data from the server.
+      await loadAllSupplies({ search: searchQuery.value });
     } catch (error) {
       console.error("Error deleting supply:", error);
       alert("Failed to delete supply: " + (errorMessage.value || error.message));
